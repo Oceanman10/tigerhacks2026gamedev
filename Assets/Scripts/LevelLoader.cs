@@ -5,7 +5,8 @@ using UnityEngine;
 [Serializable]
 public class Point {
     public Vector3 point;
-    // should be null unless you want a point curve between two points
+    // set curved to true to bend the trail to the next point toward point2
+    public bool curved;
     public Vector3 point2;
 }
 
