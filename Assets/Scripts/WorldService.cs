@@ -5,10 +5,13 @@ public class WorldService : MonoBehaviour
 	public LevelLoader levelLoader;
 	// optional: a prefab with a LineRenderer + Trail; a plain one is made if left empty
 	public Trail trailPrefab;
-	public float triggerRadius = 3f;
 	public float trailWidth = 0.1f;
+	// how fast the camera scrolls forward along z
+	public float scrollSpeed = 3f;
+	// a point's trail is drawn once the point is this far ahead of the camera (along z)
+	public float revealDistance = 20f;
 
-	// index of the next point the camera needs to reach
+	// index of the next point whose trail hasn't been drawn yet
 	private int next = 0;
 
     void Start()
@@ -21,19 +24,17 @@ public class WorldService : MonoBehaviour
 
     void Update()
     {
-		var data = levelLoader?.GetLevelData();
-		if (data is null || data.points is null) return;
-		var pts = data.points;
-		if (next >= pts.Length - 1) return;
-
 		var cam = Camera.main;
 		if (cam == null) return;
 
-		// ignore height so only horizontal (x/z) distance matters
-		Vector3 camPos = cam.transform.position;
-		Vector3 target = pts[next].point;
-		Vector2 offset = new Vector2(camPos.x - target.x, camPos.z - target.z);
-		if (offset.magnitude < triggerRadius)
+		cam.transform.position += Vector3.forward * scrollSpeed * Time.deltaTime;
+
+		var data = levelLoader?.GetLevelData();
+		if (data is null || data.points is null) return;
+		var pts = data.points;
+
+		// only z matters, so height and sideways position don't affect when a trail appears
+		while (next < pts.Length - 1 && pts[next].point.z - cam.transform.position.z < revealDistance)
 		{
 			var from = pts[next];
 			var to = pts[next + 1];
