@@ -14,14 +14,6 @@ public class WorldService : MonoBehaviour
 	// index of the next point whose trail hasn't been drawn yet
 	private int next = 0;
 
-    void Start()
-	{
-		// scene "Easy" loads Levels/easy.json, "Medium" loads medium.json, etc.
-		string level = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.ToLower();
-		levelLoader = new LevelLoader(System.IO.Path.Combine(Application.dataPath, "Levels", level + ".json"));
-		levelLoader.LoadLevel();
-	}
-
     void Update()
     {
 		var cam = Camera.main;
