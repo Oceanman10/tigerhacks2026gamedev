@@ -1,13 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-/// <summary>
-/// Attach this to the Pause Menu's Canvas (the same GameObject referenced by
-/// PauseManager's "pauseMenuRoot" field, or a child of it).
-/// Wires up the buttons - assign them in the Inspector, or just hook these
-/// public methods to the buttons' OnClick() events directly and skip the
-/// SerializeField wiring below.
-/// </summary>
 public class PauseMenuUI : MonoBehaviour
 {
     [Header("Optional: auto-wire buttons instead of using OnClick() in Inspector")]

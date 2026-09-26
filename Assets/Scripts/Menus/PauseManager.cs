@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 
 /// <summary>
 /// Global pause controller. Auto-instantiates itself from Resources/PauseManager.prefab
@@ -18,7 +19,6 @@ public class PauseManager : MonoBehaviour
     [SerializeField] private GameObject pauseMenuRoot;
 
     [Header("Options")]
-    [SerializeField] private KeyCode pauseKey = KeyCode.Escape;
     [SerializeField] private bool pauseAudio = true;
 
     // Runs automatically before the first scene loads - no manual placement needed.
@@ -55,7 +55,7 @@ public class PauseManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(pauseKey))
+        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
         {
             TogglePause();
         }
