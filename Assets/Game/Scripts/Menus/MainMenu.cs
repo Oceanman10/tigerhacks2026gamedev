@@ -6,6 +6,7 @@ public class MenuManager : MonoBehaviour
     public GameObject SetBG;
     public GameObject DiffBG;
     public GameObject SoundSettings;
+    public GameObject GameplaySettings;
 
     public void openSetBG()
     {
@@ -13,6 +14,7 @@ public class MenuManager : MonoBehaviour
         SetBG.SetActive(true);
         DiffBG.SetActive(false);
         SoundSettings.SetActive(false);
+        GameplaySettings.SetActive(false);
     }
 
     public void openDiffBG()
@@ -33,10 +35,13 @@ public class MenuManager : MonoBehaviour
 
     public void openSoundSettings()
     {
-        MainBG.SetActive(false);
         SetBG.SetActive(false);
-        DiffBG.SetActive(false);
         SoundSettings.SetActive(true);
+    }
+    public void openGameplaySettings()
+    {
+        SetBG.SetActive(false);
+        GameplaySettings.SetActive(true);
     }
     public void quitGame()
     {
