@@ -16,6 +16,7 @@ public class BallController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        transform.position += Vector3.forward * GameSettings.Instance.ballVelocity * Time.deltaTime;
         Vector2 mousePos = Mouse.current.position.ReadValue();
         float clampedX = Mathf.Clamp(mousePos.x, 50f, Screen.width - 50f);
         float clampedY = Mathf.Clamp(mousePos.y, 50f, Screen.height - 50f);

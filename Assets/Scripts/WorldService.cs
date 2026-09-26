@@ -7,7 +7,7 @@ public class WorldService : MonoBehaviour
 	public Trail trailPrefab;
 	public float trailWidth = 0.1f;
 	// how fast the camera scrolls forward along z
-	public float scrollSpeed = 3f;
+	public float scrollSpeed => GameSettings.Instance.ballVelocity;
 	// a point's trail is drawn once the point is this far ahead of the camera (along z)
 	public float revealDistance = 20f;
 
