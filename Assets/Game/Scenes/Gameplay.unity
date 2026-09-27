@@ -387,6 +387,16 @@ MonoBehaviour:
   trailWidth: 0.1
   scrollSpeed: 3
   revealDistance: 20
+  cursorDepth: 5
+  lineTolerance: 0.35
+  orbTolerance: 0.4
+  linePointsPerSecond: 10
+  orbPointsPerSecond: 25
+  orbScoreWindow: 1
+  indicatorDistance: 8
+  glitchMaterial: {fileID: 2100000, guid: d041bc6254386488c9a402afa609a3bb, type: 2}
+  glitchSpike: 0.9
+  glitchDuration: 0.2
 --- !u!1 &1601231252
 GameObject:
   m_ObjectHideFlags: 0
@@ -631,7 +641,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -2359.31, y: -0, z: 7026.2524}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.25, y: 0.25, z: 0.25}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 311477876}

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using UnityEngine;
 
@@ -19,6 +20,8 @@ public class LevelLoader
 {
     private readonly string file_path;
     private LevelData level_data;
+    // spawned orbs, in the same order as level_data.points
+    private readonly List<GameObject> targets = new List<GameObject>();
 
     public LevelLoader(string file_path)
     {
@@ -28,6 +31,11 @@ public class LevelLoader
     public LevelData GetLevelData()
     {
         return this.level_data;
+    }
+
+    public List<GameObject> GetTargets()
+    {
+        return this.targets;
     }
 
 	public void LoadLevel()
@@ -47,7 +55,7 @@ public class LevelLoader
 		foreach (var p in this.level_data.points)
 		{
 			Debug.Log("Loading gameobj at point: " + p.point.x + ", " + p.point.y + ", " + p.point.z);
-			GameObject.Instantiate(target_obj, p.point, Quaternion.identity);
+			this.targets.Add(GameObject.Instantiate(target_obj, p.point, Quaternion.identity));
 		}
 	}
 

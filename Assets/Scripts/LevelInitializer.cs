@@ -19,5 +19,10 @@ public class LevelInitializer : MonoBehaviour
 
         LevelLoader loader = new LevelLoader(fullPath);
         loader.LoadLevel();
+
+        // WorldService draws the trails from the loaded level data
+        WorldService world = FindAnyObjectByType<WorldService>();
+        if (world != null) world.levelLoader = loader;
+        else Debug.LogError("No WorldService in the scene, trails won't be drawn");
     }
 }
