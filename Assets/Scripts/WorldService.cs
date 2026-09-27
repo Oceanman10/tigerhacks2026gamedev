@@ -1,5 +1,7 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class WorldService : MonoBehaviour
 {
@@ -31,6 +33,15 @@ public class WorldService : MonoBehaviour
 	public float glitchSpike = 0.45f;
 	public float glitchDuration = 0.12f;
 
+	[Header("Level end")]
+	// scene loaded once the last orb is destroyed; leave empty to stay in the level
+	public string endSceneName = "MainMenu";
+	// time to let the last orb's shatter play out before leaving
+	public float endDelay = 1.5f;
+
+	// fired with the final score when the last orb is destroyed
+	public static event Action<float> OnLevelComplete;
+
 	public float Score { get; private set; }
 	// true while the camera is stopped waiting for the cursor to reach the current orb
 	public bool IsWaiting { get; private set; }
@@ -43,6 +54,7 @@ public class WorldService : MonoBehaviour
 	private TargetIndicator indicator;
 	private float glitchBase;
 	private float glitchTimer;
+	private float endTimer;
 
 	void Start()
 	{
@@ -53,6 +65,13 @@ public class WorldService : MonoBehaviour
     {
 		var cam = Camera.main;
 		if (cam == null) return;
+
+		if (IsFinished)
+		{
+			UpdateGlitch();
+			UpdateLevelEnd();
+			return;
+		}
 
 		if (!IsWaiting)
 		{
@@ -80,8 +99,6 @@ public class WorldService : MonoBehaviour
 		{
 			Score += linePointsPerSecond * Time.deltaTime;
 		}
-
-		if (IsFinished) return;
 
 		Vector3 orb = pts[currentOrb].point;
 		float orbAhead = orb.z - cursorZ;
@@ -127,7 +144,20 @@ public class WorldService : MonoBehaviour
 
 		IsWaiting = false;
 		currentOrb++;
-		if (currentOrb >= levelLoader.GetLevelData().points.Length) IsFinished = true;
+		if (currentOrb >= levelLoader.GetLevelData().points.Length)
+		{
+			// last orb destroyed: the camera stops here and the score is final
+			IsFinished = true;
+			endTimer = endDelay;
+			OnLevelComplete?.Invoke(Score);
+		}
+	}
+
+	private void UpdateLevelEnd()
+	{
+		if (string.IsNullOrEmpty(endSceneName) || endTimer <= 0) return;
+		endTimer -= Time.deltaTime;
+		if (endTimer <= 0) SceneManager.LoadScene(endSceneName);
 	}
 
 	private void UpdateGlitch()
