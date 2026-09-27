@@ -7,6 +7,7 @@ using UnityEngine.InputSystem;
 /// Global pause controller. Auto-instantiates itself from Resources/PauseManager.prefab
 /// before any scene loads, so it exists in every level without manual setup.
 /// Handles the Escape key, freezing time, and showing/hiding the pause menu UI.
+/// Also shows the end screen once a level is completed.
 /// </summary>
 public class PauseManager : MonoBehaviour
 {
@@ -14,9 +15,14 @@ public class PauseManager : MonoBehaviour
     public static event Action<bool> OnPauseChanged;
 
     public bool IsPaused { get; private set; }
+    public bool IsEndScreenShown { get; private set; }
 
     [Header("Assign the Pause Menu Canvas (child of this prefab)")]
     [SerializeField] private GameObject pauseMenuRoot;
+
+    [Header("Assign the End Screen Canvas (child of this prefab)")]
+    [SerializeField] private GameObject endScreenRoot;
+    [SerializeField] private EndScreenUI endScreen;
 
     [Header("Options")]
     [SerializeField] private bool pauseAudio = true;
@@ -51,10 +57,25 @@ public class PauseManager : MonoBehaviour
 
         if (pauseMenuRoot != null)
             pauseMenuRoot.SetActive(false);
+        if (endScreenRoot != null)
+            endScreenRoot.SetActive(false);
+    }
+
+    private void OnEnable()
+    {
+        WorldService.OnLevelComplete += ShowEndScreen;
+    }
+
+    private void OnDisable()
+    {
+        WorldService.OnLevelComplete -= ShowEndScreen;
     }
 
     private void Update()
     {
+        // the level is over, so there's nothing to pause
+        if (IsEndScreenShown) return;
+
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
         {
             TogglePause();
@@ -91,17 +112,37 @@ public class PauseManager : MonoBehaviour
         OnPauseChanged?.Invoke(false);
     }
 
+    public void ShowEndScreen(float score)
+    {
+        if (IsPaused) Resume();
+        IsEndScreenShown = true;
+
+        StreakTracker streak = FindAnyObjectByType<StreakTracker>();
+        if (endScreen != null) endScreen.SetResults(streak != null ? streak.CurrentRank : 0, score);
+        if (endScreenRoot != null)
+            endScreenRoot.SetActive(true);
+    }
+
+    private void HideEndScreen()
+    {
+        IsEndScreenShown = false;
+        if (endScreenRoot != null)
+            endScreenRoot.SetActive(false);
+    }
+
     // --- Convenience methods for buttons / other scripts ---
 
     public void RestartLevel()
     {
         Resume(); // un-freeze time before reloading, or the new scene loads paused
+        HideEndScreen();
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     public void LoadScene(string sceneName)
     {
         Resume();
+        HideEndScreen();
         SceneManager.LoadScene(sceneName);
     }
 

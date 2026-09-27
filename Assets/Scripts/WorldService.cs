@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.SceneManagement;
 
 public class WorldService : MonoBehaviour
 {
@@ -33,12 +32,10 @@ public class WorldService : MonoBehaviour
 	public float glitchDuration = 0.12f;
 
 	[Header("Level end")]
-	// scene loaded once the last orb is destroyed; leave empty to stay in the level
-	public string endSceneName = "MainMenu";
-	// time to let the last orb's shatter play out before leaving
+	// time to let the last orb's shatter play out before the end screen shows
 	public float endDelay = 1.5f;
 
-	// fired with the final score when the last orb is destroyed
+	// fired with the final score once the last orb is destroyed and its shatter has played out
 	public static event Action<float> OnLevelComplete;
 	public static event Action OnOrbHit;
 	public static event Action OnStreakBroken;
@@ -57,6 +54,7 @@ public class WorldService : MonoBehaviour
 	private float glitchBase;
 	private float glitchTimer;
 	private float endTimer;
+	private bool levelCompleteSent;
 
 	void Start()
 	{
@@ -156,7 +154,6 @@ public class WorldService : MonoBehaviour
 			// last orb destroyed: the camera stops here and the score is final
 			IsFinished = true;
 			endTimer = endDelay;
-			OnLevelComplete?.Invoke(Score);
 		}
 	}
 
@@ -169,9 +166,11 @@ public class WorldService : MonoBehaviour
 
 	private void UpdateLevelEnd()
 	{
-		if (string.IsNullOrEmpty(endSceneName) || endTimer <= 0) return;
+		if (levelCompleteSent) return;
 		endTimer -= Time.deltaTime;
-		if (endTimer <= 0) SceneManager.LoadScene(endSceneName);
+		if (endTimer > 0) return;
+		levelCompleteSent = true;
+		OnLevelComplete?.Invoke(Score);
 	}
 
 	private void UpdateGlitch()

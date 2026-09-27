@@ -544,7 +544,6 @@ MonoBehaviour:
   glitchMaterial: {fileID: 2100000, guid: d041bc6254386488c9a402afa609a3bb, type: 2}
   glitchSpike: 0.9
   glitchDuration: 0.2
-  endSceneName: MainMenu
   endDelay: 1.5
 --- !u!1 &1024879357
 GameObject:
