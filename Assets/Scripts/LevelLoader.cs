@@ -44,6 +44,7 @@ public class LevelLoader
 		{
 			Debug.Log("Loading level " + file_path);
 			this.level_data = this.LoadLevelData();
+			ClampToCameraView(this.level_data);
 		}
 		var target_obj = GameObject.FindWithTag("GameTarget");
 		if(target_obj is null)
@@ -58,6 +59,42 @@ public class LevelLoader
 			this.targets.Add(GameObject.Instantiate(target_obj, p.point, Quaternion.identity));
 		}
 	}
+
+    // Keeps every orb (and the curve control points between them) within what the
+    // camera can actually see once it reaches the cursor plane - the tightest point
+    // of the frustum an orb still needs to be visible at, since it only gets closer
+    // (and the frustum only gets narrower) from there (see WorldService.cursorDepth).
+    // Levels are authored in world units with no idea of the camera's FOV or aspect
+    // ratio, so without this a narrower window/monitor can push orbs off-screen.
+    private static void ClampToCameraView(LevelData level)
+    {
+        if (level?.points == null) return;
+
+        Camera cam = Camera.main;
+        if (cam == null) return;
+
+        WorldService world = UnityEngine.Object.FindAnyObjectByType<WorldService>();
+        float depth = world != null ? world.cursorDepth : 3.5f;
+
+        float halfHeight = depth * Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad);
+        float halfWidth = halfHeight * cam.aspect;
+
+        // leave room for the orb's own radius and its shrinking target indicator
+        const float margin = 0.3f;
+        halfWidth = Mathf.Max(0f, halfWidth - margin);
+        halfHeight = Mathf.Max(0f, halfHeight - margin);
+
+        foreach (var p in level.points)
+        {
+            p.point.x = Mathf.Clamp(p.point.x, -halfWidth, halfWidth);
+            p.point.y = Mathf.Clamp(p.point.y, -halfHeight, halfHeight);
+            if (p.curved)
+            {
+                p.point2.x = Mathf.Clamp(p.point2.x, -halfWidth, halfWidth);
+                p.point2.y = Mathf.Clamp(p.point2.y, -halfHeight, halfHeight);
+            }
+        }
+    }
 
     private LevelData LoadLevelData()
     {
