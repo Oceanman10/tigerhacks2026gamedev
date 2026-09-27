@@ -41,11 +41,14 @@ public class WorldService : MonoBehaviour
 
 	// fired with the final score when the last orb is destroyed
 	public static event Action<float> OnLevelComplete;
+	public static event Action OnOrbHit;
+	public static event Action OnStreakBroken;
 
 	public float Score { get; private set; }
 	// true while the camera is stopped waiting for the cursor to reach the current orb
 	public bool IsWaiting { get; private set; }
 	public bool IsFinished { get; private set; }
+	public bool IsOnLine { get; private set; }
 
 	// index of the next point whose trail hasn't been drawn yet
 	private int next = 0;
@@ -94,10 +97,12 @@ public class WorldService : MonoBehaviour
 		Vector3 cursor = CursorPosition(cam);
 
 		// tracing the line
-		if (cursorZ >= pts[0].point.z && cursorZ <= pts[^1].point.z
-			&& FlatDistance(cursor, PathPointAtZ(pts, cursorZ)) <= lineTolerance)
+		IsOnLine = cursorZ >= pts[0].point.z && cursorZ <= pts[^1].point.z
+    	&& FlatDistance(cursor, PathPointAtZ(pts, cursorZ)) <= lineTolerance;
+
+		if (IsOnLine)
 		{
-			Score += linePointsPerSecond * Time.deltaTime;
+    	Score += linePointsPerSecond * Time.deltaTime; // unchanged, still exists, just now conditional on the new bool
 		}
 
 		Vector3 orb = pts[currentOrb].point;
@@ -120,11 +125,15 @@ public class WorldService : MonoBehaviour
 		}
 
 		// the orb has reached the cursor plane: clear it if the cursor is on it, otherwise stop and wait
-		if (orbAhead <= 0)
-		{
-			if (onOrb) ClearOrb();
-			else IsWaiting = true;
-		}
+		if (orbAhead <= 0){
+    if (onOrb) ClearOrb();
+    else if (!IsWaiting)
+    {
+        IsWaiting = true;
+        OnStreakBroken?.Invoke();
+    }
+	}
+	
     }
 
 	void OnDisable()
@@ -144,6 +153,7 @@ public class WorldService : MonoBehaviour
 
 		IsWaiting = false;
 		currentOrb++;
+		OnOrbHit?.Invoke();
 		if (currentOrb >= levelLoader.GetLevelData().points.Length)
 		{
 			// last orb destroyed: the camera stops here and the score is final
