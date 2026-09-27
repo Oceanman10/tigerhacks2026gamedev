@@ -534,7 +534,7 @@ MonoBehaviour:
   trailPrefab: {fileID: 0}
   trailWidth: 0.1
   revealDistance: 20
-  cursorDepth: 5
+  cursorDepth: 3.5
   lineTolerance: 0.35
   orbTolerance: 0.4
   linePointsPerSecond: 10

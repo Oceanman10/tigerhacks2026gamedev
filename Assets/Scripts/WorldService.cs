@@ -9,14 +9,13 @@ public class WorldService : MonoBehaviour
 	// optional: a prefab with a LineRenderer + Trail; a plain one is made if left empty
 	public Trail trailPrefab;
 	public float trailWidth = 0.1f;
+	public Color trailColor = new Color(0.55f, 0.85f, 1f);
 	// how fast the camera scrolls forward along z
 	public float scrollSpeed => GameSettings.Instance.ballVelocity;
-	// a point's trail is drawn once the point is this far ahead of the camera (along z)
-	public float revealDistance = 20f;
 
 	[Header("Scoring")]
 	// the cursor is tracked on a plane this far in front of the camera (match BallController.distanceFromCamera)
-	public float cursorDepth = 3.75f;
+	public float cursorDepth = 3.5f;
 	// how close the cursor has to be (world units) to count as on the line / orb
 	public float lineTolerance = 0.35f;
 	public float orbTolerance = 0.4f;
@@ -50,7 +49,7 @@ public class WorldService : MonoBehaviour
 	public bool IsFinished { get; private set; }
 	public bool IsOnLine { get; private set; }
 
-	// index of the next point whose trail hasn't been drawn yet
+	// index of the next point whose trail hasn't been drawn yet; the trail ending at next is the latest one drawn
 	private int next = 0;
 	// index of the orb the player needs to reach next
 	private int currentOrb = 0;
@@ -86,12 +85,8 @@ public class WorldService : MonoBehaviour
 		if (data is null || data.points is null || data.points.Length == 0) return;
 		var pts = data.points;
 
-		// only z matters, so height and sideways position don't affect when a trail appears
-		while (next < pts.Length - 1 && pts[next].point.z - cam.transform.position.z < revealDistance)
-		{
-			CreateTrail().Begin(pts[next].point, Control(pts, next), pts[next + 1].point);
-			next++;
-		}
+		// the first trail draws as soon as the level starts; the rest are drawn as orbs are destroyed
+		if (next == 0) DrawNextTrail(pts);
 
 		float cursorZ = cam.transform.position.z + cursorDepth;
 		Vector3 cursor = CursorPosition(cam);
@@ -152,6 +147,8 @@ public class WorldService : MonoBehaviour
 		glitchTimer = glitchDuration;
 
 		IsWaiting = false;
+		// destroying the orb before the latest trail's end draws the following trail, so it animates in view
+		if (currentOrb == next - 1) DrawNextTrail(levelLoader.GetLevelData().points);
 		currentOrb++;
 		OnOrbHit?.Invoke();
 		if (currentOrb >= levelLoader.GetLevelData().points.Length)
@@ -161,6 +158,13 @@ public class WorldService : MonoBehaviour
 			endTimer = endDelay;
 			OnLevelComplete?.Invoke(Score);
 		}
+	}
+
+	private void DrawNextTrail(Point[] pts)
+	{
+		if (next >= pts.Length - 1) return;
+		CreateTrail().Begin(pts[next].point, Control(pts, next), pts[next + 1].point);
+		next++;
 	}
 
 	private void UpdateLevelEnd()
@@ -223,6 +227,8 @@ public class WorldService : MonoBehaviour
 		line.startWidth = trailWidth;
 		line.endWidth = trailWidth;
 		line.material = new Material(Shader.Find("Sprites/Default"));
+		line.startColor = trailColor;
+		line.endColor = trailColor;
 		return obj.AddComponent<Trail>();
 	}
 }
